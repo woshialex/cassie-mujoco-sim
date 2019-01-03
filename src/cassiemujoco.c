@@ -868,7 +868,7 @@ bool cassie_sim_check_self_collision(const cassie_sim_t *c)
     return false;
 }
 
-void cassie_sim_foot_positions(cassie_sim_t *c, double cpos[6])
+void cassie_sim_foot_positions(const cassie_sim_t *c, double cpos[6])
 {
     // Zero the output foot positions 
     mju_zero_fp(cpos, 6);
