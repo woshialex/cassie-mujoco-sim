@@ -868,13 +868,13 @@ bool cassie_sim_check_self_collision(const cassie_sim_t *c)
     return false;
 }
 
-double *cassie_sim_foot_positions(cassie_sim_t *c, double cpos[6])
+void cassie_sim_foot_positions(cassie_sim_t *c, double cpos[6])
 {
-    // Zero the output foot positions (global coords)
+    // Zero the output foot positions 
     mju_zero_fp(cpos, 6);
 
     for (int i = 0; i < 3; ++i) {
-        // Get foot xyz
+        // Get foot xyz (global coords)
         cpos[i]     = c->d->xpos[3 * left_foot_body_id + i];
         cpos[3 + i] = c->d->xpos[3 * right_foot_body_id + i];
     }
