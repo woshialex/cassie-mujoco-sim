@@ -178,6 +178,11 @@ bool cassie_sim_check_self_collision(const cassie_sim_t *sim);
 // cfrc[9-11]: Currently zero, reserved for torque acting on the right foot
 void cassie_sim_foot_forces(const cassie_sim_t *c, double cfrc[12]);
 
+// Returns the positions of the left and right feet
+// cpos[0-3]: Left foot x y z
+// cpos[3-6]: Right foot x y z
+void cassie_sim_foot_positions(const cassie_sim_t *c, double cpos[6]);
+
 // Applies an external force to a specified body.
 void cassie_sim_apply_force(cassie_sim_t *sim, double xfrc[6], int body);
 
