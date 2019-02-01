@@ -2,7 +2,7 @@
 PLATFORM := LINUX
 
 # Compilation settings
-INC     := -Iinclude -Imjpro150/include
+INC     := -Iinclude -Imjpro150/include -I$(HOME)/.mujoco/mjpro150/include
 CFLAGS  := -std=gnu11 -Wall -Wextra -O3 -march=sandybridge -flto
 LDFLAGS := -shared -Lsrc
 

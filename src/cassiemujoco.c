@@ -268,15 +268,38 @@ static bool load_glfw_library(const char *basedir)
 #ifndef _WIN32
     // Open dependencies
     gl_handle = LOADLIB("libGL.so.1");
+
     snprintf(buf, sizeof buf, "%.4096s/mjpro150/bin/libglew.so", basedir);
     glew_handle = LOADLIB(buf);
+
+    // Attempt to open library from $HOME/.mujoco/
+    if (!glew_handle) {
+        char *homedir = getenv("HOME");
+
+        if (homedir) {
+            snprintf(buf, sizeof buf, "%.4096s/.mujoco/mjpro150/bin/libglew.so", homedir);
+            glew_handle = LOADLIB(buf);
+        }
+    }
+
     if (!gl_handle || !glew_handle)
         return false;
 #endif
 
-    // Open library
+    // Attempt to open library from basedir
     snprintf(buf, sizeof buf, "%.4096s/mjpro150/bin/" GLFWLIBNAME, basedir);
     glfw_handle = LOADLIB(buf);
+
+    // Attempt to open library from $HOME/.mujoco/
+    if (!glfw_handle) {
+        char *homedir = getenv("HOME");
+
+        if (homedir) {
+            snprintf(buf, sizeof buf, "%.4096s/.mujoco/mjpro150/bin/" GLFWLIBNAME, homedir);
+            glfw_handle = LOADLIB(buf);
+        }
+    }
+
     if (!glfw_handle) {
         fprintf(stderr, "Failed to load %s\n", buf);
         return false;
@@ -306,8 +329,19 @@ static bool load_mujoco_library(const char *basedir)
         snprintf(buf, sizeof buf, "%.4096s/mjpro150/bin/" MJLIBNAMENOGL, basedir);
 #endif
 
-    // Open library
+    // Attempt to open library from basedir
     mj_handle = LOADLIB(buf);
+
+    // Attempt to open library from $HOME/.mujoco/
+    if (!mj_handle) {
+        char *homedir = getenv("HOME");
+
+        if (homedir) {
+            snprintf(buf, sizeof buf, "%.4096s/.mujoco/mjpro150/bin/" MJLIBNAME, homedir);
+            mj_handle = LOADLIB(buf);
+        }
+    }
+
     if (!mj_handle) {
         fprintf(stderr, "Failed to load %s\n", buf);
         return false;
@@ -614,8 +648,16 @@ bool cassie_mujoco_init(const char *basedir)
         if (!load_mujoco_library(basedir))
             return false;
 
-        // Activate MuJoCo
         snprintf(buf, sizeof buf, "%.4096s/mjkey.txt", basedir);
+
+        // Attempt to load mjkey from $HOME/.mujoco/ if it's not in basedir
+        if(access(buf, F_OK) == -1) {
+            char *homedir = getenv("HOME");
+            if (homedir)
+                snprintf(buf, sizeof buf, "%.4096s/.mujoco/mjkey.txt", homedir);
+        }
+
+        // Activate MuJoCo
         mj_activate_fp(buf);
 
         // Load the model
