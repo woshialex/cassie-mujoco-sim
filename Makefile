@@ -2,7 +2,7 @@
 PLATFORM := LINUX
 
 # Compilation settings
-INC     := -Iinclude -Imjpro150/include -I$(HOME)/.mujoco/mjpro150/include
+INC     := -Iinclude -I$(HOME)/.mujoco/mujoco210/include
 CFLAGS  := -std=gnu11 -Wall -Wextra -O3 -march=sandybridge -flto
 LDFLAGS := -shared -Lsrc
 
@@ -28,11 +28,13 @@ clean:
 	rm -rf test/
 
 $(LIBOUT): src/*.c
+	echo src/*.c $(INC) $(CFLAGS) -o $(LIBOUT) $(LDFLAGS) $(LIBS)
 	$(CC) src/*.c $(INC) $(CFLAGS) -o $(LIBOUT) $(LDFLAGS) $(LIBS)
 
 build: $(LIBOUT)
 	mkdir -p build
 	cp $(LIBOUT) build/
+	cp $(LIBOUT) example/
 	cp -r include build/
 	cp -r model/* build/
 
@@ -44,9 +46,7 @@ ctypes: build
 test: checkdirs build
 	mkdir -p test
 	cp -r build/* test/
-	cp example/* test/
-	cp -r mjpro150 test/
-	cp mjkey.txt test/
+	cp -r example/* test/
 	make -C test PLATFORM="$(PLATFORM)"
 
 # Virtual targets

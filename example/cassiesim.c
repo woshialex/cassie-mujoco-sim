@@ -169,10 +169,11 @@ int main(int argc, char *argv[])
     socklen_t addrlen = sizeof src_addr;
 
     // Create cassie simulation
-    cassie_sim_t *sim = cassie_sim_init();
+    const char modelfile[] = "../model/cassie.xml";
+    cassie_sim_t *sim = cassie_sim_init(modelfile, false);
     cassie_vis_t *vis;
     if (visualize)
-        vis = cassie_vis_init();
+        vis = cassie_vis_init(sim, modelfile, true);
     if (hold)
         cassie_sim_hold(sim);
 
@@ -197,7 +198,8 @@ int main(int argc, char *argv[])
     printf("Waiting for input...\n");
 
     // Listen/respond loop
-    while (true) {
+    bool render_state = true;
+    while (render_state) {
         // Try to get a new packet
         ssize_t nbytes;
         if (realtime) {
@@ -214,8 +216,8 @@ int main(int argc, char *argv[])
         if (recvlen == nbytes) {
             // Process incoming header and write outgoing header
             process_packet_header(&header_info, header_in, header_out);
-            printf("\033[F\033[Jdelay: %d, diff: %d\n",
-                   header_info.delay, header_info.seq_num_in_diff);
+            //printf("\033[F\033[Jdelay: %d, diff: %d\n",
+            //       header_info.delay, header_info.seq_num_in_diff);
 
             // Unpack received data into cassie user input struct
             switch (mode) {
@@ -233,6 +235,8 @@ int main(int argc, char *argv[])
             run_sim = true;
         }
 
+        size_t compute_start = get_microseconds();
+        double sim_start     = *cassie_sim_time(sim);
         if (run_sim) {
             // Run simulator and pack output struct into outgoing packet
             switch (mode) {
@@ -275,10 +279,26 @@ int main(int argc, char *argv[])
             send_packet(sock, sendbuf, sendlen,
                         (struct sockaddr *) &src_addr, addrlen);
         }
+        double cpu_deltat, sim_deltat;
+        double sim_end = *cassie_sim_time(sim);
+        do{
+          size_t compute_end = get_microseconds();
+          cpu_deltat  = (double)(compute_end - compute_start) / 1e6;
+          sim_deltat  = sim_end - sim_start;
+        } while(sim_deltat > cpu_deltat);
+
+        if(cpu_deltat > sim_deltat + 1e-4){
+          printf("SLOWER THAN REAL TIME BY %6.5fs\n", cpu_deltat - sim_deltat);
+
+        }
+
+        
+        //printf("%6.5f vs %6.5f\n", cpu_deltat, sim_deltat);
+
 
         // Draw no more then once every 33 simulation steps
         if (visualize && loop_counter % 33 == 0)
-            cassie_vis_draw(vis, sim);
+            render_state = cassie_vis_draw(vis, sim);
 
         // Increment loop counter
         ++loop_counter;
