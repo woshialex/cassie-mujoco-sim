@@ -33,8 +33,8 @@ $(LIBOUT): src/*.c
 
 build: $(LIBOUT)
 	mkdir -p build
-	cp $(LIBOUT) build/
 	cp $(LIBOUT) example/
+	cp $(LIBOUT) build/
 	cp -r include build/
 	cp -r model/* build/
 

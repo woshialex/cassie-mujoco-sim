@@ -12,7 +12,7 @@
 # ACTION OF CONTRACT, NEGLIGENCE OR OTHER TORTIOUS ACTION, ARISING OUT OF
 # OR IN CONNECTION WITH THE USE OR PERFORMANCE OF THIS SOFTWARE.
 
-from cassiemujoco_ctypes import *
+from .cassiemujoco_ctypes import *
 import os
 import ctypes
 import numpy as np
@@ -23,7 +23,7 @@ import numpy as np
 _dir_path = os.path.dirname(os.path.realpath(__file__))
 
 # Initialize libcassiesim
-default_model = "../model/cassie.xml"
+default_model = _dir_path + "/../model/cassie.xml"
 cassie_mujoco_init(str.encode(default_model))
 
 # Interface classes
@@ -31,16 +31,8 @@ cassie_mujoco_init(str.encode(default_model))
 class CassieSim:
     def __init__(self, modelfile=default_model, terrain=False, perception=False, reinit=False):
 
-        if modelfile is not default_model:
-            self.modelfile = modelfile
-        else:
-            base = 'cassie'
-            if perception:
-                base += '_perception'
-            if terrain:
-                base += '_hfield'
-            self.modelfile = os.path.join(_dir_path, base + '.xml')
-
+        self.modelfile = modelfile
+        print('load model:', self.modelfile)
         self.c = cassie_sim_init(self.modelfile.encode('utf-8'), True)
 
         if terrain:
